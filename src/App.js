@@ -106,6 +106,10 @@ export default function App() {
               flag: map[ipKey].flag,
               hasNewData: false,
               hasPayment: map[ipKey].hasPayment,
+              lastActivityAt: Math.max(
+                map[ipKey].lastActivityAt || 0,
+                r.updatedAt ? new Date(r.updatedAt).getTime() : 0
+              ),
             };
           });
         });
@@ -258,6 +262,7 @@ export default function App() {
               flag: oldObj.flag,
               hasNewData: true, // ✅ mark as new data
               hasPayment: oldObj.hasPayment || u.hasPayment === true,
+              lastActivityAt: Date.now(),
             },
           };
         });
@@ -284,6 +289,7 @@ export default function App() {
               flag: oldObj.flag,
               hasNewData: true, // ✅ mark as new data
               hasPayment: oldObj.hasPayment || u.hasPayment === true,
+              lastActivityAt: Date.now(),
             },
           };
         });
@@ -346,6 +352,7 @@ export default function App() {
               flag: oldObj.flag,
               hasNewData: true, // new data arrived
               hasPayment: true, // ✅ mark as paid/completed
+              lastActivityAt: Date.now(),
             },
           };
         });
@@ -488,6 +495,19 @@ function DashboardView({
   setInfoIp,
   setCardIp,
 }) {
+  // ✅ حافظ على موضع الـ scroll عند كل تحديث للبيانات
+  const scrollRef = React.useRef(0);
+
+  React.useLayoutEffect(() => {
+    // قبل الرسم: احفظ الموضع الحالي
+    scrollRef.current = window.scrollY;
+  });
+
+  React.useEffect(() => {
+    // بعد الرسم: رجّع للموضع المحفوظ
+    window.scrollTo(0, scrollRef.current);
+  });
+
   return (
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
